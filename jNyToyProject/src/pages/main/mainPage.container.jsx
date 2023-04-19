@@ -1,27 +1,47 @@
 import MainPageView from "./mainPage.presenter";
 import { useState, useEffect, useRef } from "react";
+import axios from 'axios';
+import { useSelector, useDispatch } from "react-redux";
+import { recordName, arrivalTrain } from "../../store/slices/stationSlice";
+import { trainID } from "../../assets/funtions";
 
 export default function MainPage() {
     const [arrival, setArrival] = useState('');
     const [json, setJson] = useState();
     const arrivalRef = useRef('');
-    const arrivalClickHandler = async () => {
-        setArrival(arrivalRef.current.value);
-        // const res = await fetch(`http://swopenAPI.seoul.go.kr/api/subway/4b6965764370726f32377250684c56/json/realtimeStationArrival/0/5/${arrival}`)
-        // const data = res.json();
-        const res = await axios.post('http://localhost:8080/users' , {
-            arrival : arrival
-        });
-        const data = await res.json();
 
+    const dispatch = useDispatch();
+
+    const Name = (stationName) => {
+        dispatch(recordName(stationName));
+    }
+    const arri = (info) => {
+        dispatch(arrivalTrain(info))
+    }
+
+    const recordingName = useSelector((state) => {
+        return state.station.stationName;
+    })
+
+    const arrivingTrain = useSelector((state) => {
+        return state.station.arrivalStation;
+    })
+
+    const arrivalClickHandler = async () => {
+        const train = arrivalRef.current.value;
+        Name(train);
+        const res = await axios.post('http://localhost:8080/users', {
+            arrival: train
+        });
+
+        const data = await JSON.parse(res.data);
+        const realtimeData = data.realtimeArrivalList;
         try {
-            setJson(data);
+            arri(realtimeData);
         } catch (error) {
             console.log(error);
         }
     }
-
-    console.log(json);
 
     return (
         <MainPageView

@@ -1,17 +1,22 @@
 var express = require('express');
+var request = require('request');
 var router = express.Router();
 
 /* GET users listing. */
-router.get('/', function (req, res, next) {
+router.post('/', function (req, res, next) {
   const arrival = req.body;
-  const url = `http://swopenAPI.seoul.go.kr/api/subway/4b6965764370726f32377250684c56/json/realtimeStationArrival/0/5/${arrival}`;
-  express.request({
-    uri: url,
-    method: 'GET'
+  const uri1 = `http://swopenAPI.seoul.go.kr/api/subway/`;
+  const apiKey = '4b6965764370726f32377250684c56/';
+  const uri2 = 'json/realtimeStationArrival/0/5/'
+
+  var assembleUri = uri1 + apiKey + uri2 + encodeURI(arrival.arrival);
+  request(assembleUri, function (error, response, body) {
+    if (error) {
+      console.log(error)
+    } else {
+      res.json(body);
+    }
   })
-  res.json({
-    hello: 'say hello!'
-  });
 });
 
 module.exports = router;
